@@ -1,0 +1,35 @@
+{
+    "description": "Pipeline for parsing pfsense filterlog messages.",
+      "processors": [
+        {
+          "grok": {
+            "field": "message",
+            "patterns": [
+              "%{PF_LOG_DATA},%{IP_SPECIFIC_DATA}%{IP_DATA},%{PROTOCOL_DATA}"
+              ],
+            "pattern_definitions": {
+                "ICMP_DATA": "(%{ICMP_TYPE}%{ICMP_RESPONSE})",
+                "ICMP_RESPONSE": "({%GREEDYDATA:pf.ip.icmp_response})",
+                "ICMP_TYPE": "(?<icmp_type>(request|reply|unreachproto|unreachport|unreach|timeexceed|paramprob|redirect|maskreply|needfrag|tstamp|tstampreply))",
+                "IP_DATA": "(%{INT:pf.ip.length}),(%{IP:pf.ip.source.ip}),(%{IP:pf.ip.destination.ip})",
+                "IP_SPECIFIC_DATA": "(%{IPv4_SPECIFIC_DATA}|%{IPv6_SPECIFIC_DATA})",
+                "IPv4_SPECIFIC_DATA": "(%{BASE16NUM:pf.ip.tos}),(%{WORD:pf.ip.ecn})?,(%{INT:pf.ip.ttl}),(%{INT:pf.ip.id}),(%{INT:pf.ip.offset}),(?:%{WORD:pf.ip.flags}|%{PF_SPEC:pf.ip.flags}),(%{INT:pf.ip.protocol.id}),(%{WORD:pf.ip.protocol.type}),",
+                "IPv6_SPECIFIC_DATA": "(%{BASE16NUM:pf.ip.class}),(%{DATA:pf.ip.flow_label}),(%{INT:pf.ip.hop_limit}),(%{WORD:pf.ip.protocol.type}),(%{INT:pf.ip.protocol.id}),",
+                "OTHER_DATA": "(%{GREEDYDATA:pf.ip.other_data})",
+                "PF_LOG_DATA": "(%{INT:pf.rule}),(%{INT:pf.sub_rule})?,,(%{INT:pf.tracker}),(%{WORD:pf.iface}),(%{WORD:pf.reason}),(%{WORD:pf.action}),(%{WORD:pf.direction}),(%{INT:pf.ip.version})",
+                "PF_SPEC": "\\+",
+                "PFSYNC_DATA": "(%{WORD:pf.ip.carp_action}),(%{INT:pf.ip.carp_data_length}),(%{INT:pf.ip.carp_vhid_group}),(%{INT:pf.ip.carp_a}),(%{INT:pf.ip.carp_advertising_frequency_skew}),(%{INT:pf.ip.carp_advertising_frequency_base})",
+                "PROTOCOL_DATA": "(%{TCP_DATA}|%{UDP_DATA}|%{ICMP_DATA}|%{PFSYNC_DATA}|%{OTHER_DATA})",
+                "TCP_DATA": "(%{INT:pf.ip.source.port}),(%{INT:pf.ip.destination.port}),(%{INT:pf.ip.data_length}),(%{WORD:pf.ip.tcp_flags}),(%{INT:pf.ip.sequence_number}),,(%{INT:pf.ip.tcp_window}),,(%{GREEDYDATA:pf.ip.tcp_options})",
+                "UDP_DATA": "(%{INT:pf.ip.source.port}),(%{INT:pf.ip.destination.port}),(%{INT:pf.ip.data_length})"
+            }
+          }
+        }
+      ],
+      "on_failure" : [{
+        "set" : {
+          "field" : "error.message",
+          "value" : "{{ _ingest.on_failure_message }}"
+        }
+      }]
+    }

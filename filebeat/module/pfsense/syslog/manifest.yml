@@ -1,0 +1,10 @@
+module_version: "0.1"
+
+var:
+  - name: syslog_host
+    default: localhost
+  - name: syslog_port
+    default: 9000
+
+ingest_pipeline: ingest/pipeline.json
+input: config/syslog.yml

@@ -1,0 +1,26 @@
+- key: pf
+  title: Pf
+  description: >
+    Pf fields
+  anchor: pf
+  fields:
+
+    # ECS fields are in fields.ecs.yml.
+    # These are the non-ECS fields.
+    - name: pf
+      type: group
+      fields:
+
+        - name: rule_info.label
+          type: text
+          description: >
+            The user-defined label for the rule.
+        - name: rule_info.tracker_number
+          type: keyword
+          description: >
+            Rule number in config.xml.
+        - name: rule_info.effective_rule
+          type: text
+          example: "stretch"
+          description: >
+            The effective rule
